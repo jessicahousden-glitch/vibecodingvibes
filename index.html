@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>🌙 Vibe-Coded Mood Quiz</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; background: #1e222b; color: #fde9f5; padding: 0; margin: 0; min-height: 100vh;}
+    .container { max-width: 550px; margin: 2.5rem auto; background: #293044cc; border-radius: 18px; box-shadow: 0 8px 32px #04071370; padding: 2.5rem; }
+    h1 { font-size: 2rem; text-align: center; margin-bottom: .5em; }
+    .instructions { font-size: 1.1rem; color: #f2aacb; text-align: center; margin-bottom: 2rem;}
+    .question { font-size: 1.3rem; margin: 1.5em 0 .5em; }
+    .options button {
+      display: block;
+      width: 100%;
+      margin: 0.5em 0;
+      font-size: 1.1rem;
+      background: #472a4b;
+      color: #fde9f5;
+      border: none;
+      padding: .7em 1.2em;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .options button.answered {
+      background: #f2aacb;
+      color: #2e1032;
+      pointer-events: none;
+    }
+    .options button:hover { background: #a26fae; }
+    .result { margin: 2em 0 0; padding: 1.5em; background: #262741e6; border-radius: 12px; text-align: center;}
+    .result strong { font-size: 1.6em; display: block; color: #ffedad; margin-bottom: .5em; }
+    .footer { text-align: center; margin: 2em auto 0; color: #ba8ed6; font-size: .96em; }
+    @media (max-width: 600px) {
+      .container { padding: 1em; }
+      .question, .options button { font-size: 1em; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🌙 Vibe-Coded Mood Quiz</h1>
+    <div class="instructions">Answer instinctively — there are no wrong answers.</div>
+    <div id="quiz"></div>
+  </div>
+  <div class="footer">
+    &copy; 2025 Vibe-Coded Mood Quiz &mdash; Made with <span style="color: #f2aacb;">&#10084;&#65039;</span>
+  </div>
+  <script>
+    const questions = [
+      {
+        prompt: "1) Pick a sky:",
+        options: {
+          'A': "Pale pink dawn, soft and sleepy",
+          'B': "Thunderclouds rolling in, electric and loud",
+          'C': "Indigo twilight, one star showing",
+          'D': "Deep midnight blue, clouds drifting slowly",
+        },
+      },
+      {
+        prompt: "2) Which song feels most like you right now?",
+        options: {
+          'A': "Mellow indie acoustic, gentle and bright",
+          'B': "Pulsing synthpop, crackling with energy",
+          'C': "Dreamy ambient, floating outside time",
+          'D': "Lush trip-hop, mysterious and deep",
+        },
+      },
+      {
+        prompt: "3) Your favorite place to recharge:",
+        options: {
+          'A': "Curled up at home, surrounded by cozy lights",
+          'B': "In the thick of a crowd, adrenaline high",
+          'C': "Watching the world from a quiet cafe",
+          'D': "Wandering beneath streetlights at night",
+        },
+      },
+      {
+        prompt: "4) You crave:",
+        options: {
+          'A': "Inspiration and a moment to breathe",
+          'B': "A challenge — something to conquer",
+          'C': "A pause to reflect and take it in",
+          'D': "A secret adventure after dark",
+        },
+      },
+    ];
+
+    const moodDescriptions = {
+      'Golden Ember': "You’re glowing but grounded — peaceful, creative, a little dreamy.<br>A soft-focus moment of rest before something new.",
+      'Electric Storm': "You’re buzzing, bold, and a bit chaotic. Passion, irritation, and excitement<br>are tangled together — you’re alive with purpose.",
+      'Glass Horizon': "You’re in a liminal mood — detached, observant, reflective.<br>The world feels like a movie, and you’re both inside it and watching from afar.",
+      'Midnight Current': "You’re magnetic, intuitive, and a little mysterious.<br>You pull energy toward you without saying a word — transformation’s brewing."
+    };
+
+    const answerMap = {
+      'A': 'Golden Ember',
+      'B': 'Electric Storm',
+      'C': 'Glass Horizon',
+      'D': 'Midnight Current'
+    };
+
+    let current = 0;
+    let answers = [];
+
+    function renderQuiz() {
+      const quizDiv = document.getElementById('quiz');
+      quizDiv.innerHTML = '';
+      if (current < questions.length) {
+        const { prompt, options } = questions[current];
+        let html = `<div class="question">${prompt}</div><div class="options">`;
+        for (const key of Object.keys(options)) {
+          html += `<button onclick="selectOption('${key}')">${key}) ${options[key]}</button>`;
+        }
+        html += "</div>";
+        quizDiv.innerHTML = html;
+      } else {
+        showResult();
+      }
+    }
+
+    window.selectOption = function(key) {
+      answers.push(key);
+      // Mark selected option & disable others (UI feedback)
+      const btns = document.querySelectorAll('.options button');
+      btns.forEach(btn => {
+        if (btn.textContent.startsWith(key + ")")) {
+          btn.classList.add('answered');
+        } else {
+          btn.disabled = true;
+        }
+      });
+      setTimeout(() => {
+        current++;
+        renderQuiz();
+      }, 400);
+    };
+
+    function showResult() {
+      // Tally mood results
+      const moodCount = { 'Golden Ember': 0, 'Electric Storm': 0, 'Glass Horizon': 0, 'Midnight Current': 0 };
+      answers.forEach(a => moodCount[answerMap[a]]++);
+      let max = Math.max(...Object.values(moodCount));
+      const winners = Object.keys(moodCount).filter(mood => moodCount[mood] === max);
+
+      let html = `<div class="result">`;
+      if (winners.length > 1) {
+        html += `<strong>You’re a blend of moods:</strong><br>`;
+        winners.forEach(mood => {
+          html += `<div style="margin-top: 1em;"><b>${mood}</b><br><span>${moodDescriptions[mood]}</span></div>`;
+        });
+      } else {
+        winners.forEach(mood => {
+          html += `<strong>${mood}</strong><br>${moodDescriptions[mood]}`;
+        });
+      }
+      html += `<br><br><button onclick="restartQuiz()" style="margin-top:1.2em;background:#30335e">Restart Quiz</button>`;
+      html += `</div>`;
+      document.getElementById('quiz').innerHTML = html;
+    }
+
+    window.restartQuiz = function() {
+      current = 0;
+      answers = [];
+      renderQuiz();
+    };
+
+    // Initial render
+    renderQuiz();
+
+  </script>
+</body>
+</html>
