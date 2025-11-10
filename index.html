@@ -33,6 +33,14 @@
     .result strong { font-size: 2em; display: block; color: #ffedad; margin-bottom: .5em; }
     .mood-img { max-width: 340px; width: 70%; border-radius: 22px; margin: 1em auto 1.2em; box-shadow: 0 8px 32px #0004; display: block;}
     .footer { text-align: center; margin: 2em auto 0; color: #ba8ed6; font-size: .96em; }
+    .results-header {
+      font-size: 1.18em;
+      color: #b5e8f7;
+      text-align: center;
+      font-weight: 600;
+      margin-bottom: 2rem;
+      margin-top: -1.1rem;
+    }
     @media (max-width: 600px) {
       .container { padding: 1em; }
       .question, .options button { font-size: 1em; }
@@ -43,14 +51,12 @@
 <body>
   <div class="container">
     <h1>🌙 Vibe-Coded Mood Quiz</h1>
-    <div class="instructions">Answer instinctively — there are no wrong answers.</div>
     <div id="quiz"></div>
   </div>
   <div class="footer">
     &copy; 2025 Vibe-Coded Mood Quiz &mdash; Made with <span style="color: #f2aacb;">&#10084;&#65039;</span>
   </div>
   <script>
-    // Local PNG files for result images
     const moodImages = {
       'Golden Ember': "image3.png",
       'Electric Storm': "image1.png",
@@ -126,13 +132,17 @@
       const quizDiv = document.getElementById('quiz');
       quizDiv.innerHTML = '';
       if (current < questions.length) {
+        // Only show original instructions on the FIRST quiz page
+        if (current === 0) {
+          quizDiv.innerHTML += `<div class="instructions">Answer instinctively — there are no wrong answers.</div>`;
+        }
         const { prompt, options } = questions[current];
         let html = `<div class="question">${prompt}</div><div class="options">`;
         for (const key of Object.keys(options)) {
           html += `<button onclick="selectOption('${key}')">${key}) ${options[key]}</button>`;
         }
         html += "</div>";
-        quizDiv.innerHTML = html;
+        quizDiv.innerHTML += html;
       } else {
         showResult();
       }
@@ -156,13 +166,17 @@
     };
 
     function showResult() {
+      const quizDiv = document.getElementById('quiz');
+      // Show new results page header as requested
+      let html = `<div class="results-header">Wow, talk about going deep! You really pushed yourself.</div>`;
+
       // Tally mood results
       const moodCount = { 'Golden Ember': 0, 'Electric Storm': 0, 'Glass Horizon': 0, 'Midnight Current': 0 };
       answers.forEach(a => moodCount[answerMap[a]]++);
       let max = Math.max(...Object.values(moodCount));
       const winners = Object.keys(moodCount).filter(mood => moodCount[mood] === max);
 
-      let html = `<div class="result">`;
+      html += `<div class="result">`;
       if (winners.length > 1) {
         html += `<strong>You’re a blend of moods:</strong><br>`;
         winners.forEach(mood => {
@@ -179,7 +193,7 @@
       }
       html += `<br><br><button onclick="restartQuiz()" style="margin-top:1.2em;background:#30335e">Restart Quiz</button>`;
       html += `</div>`;
-      document.getElementById('quiz').innerHTML = html;
+      quizDiv.innerHTML = html;
     }
 
     window.restartQuiz = function() {
