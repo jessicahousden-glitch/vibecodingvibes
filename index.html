@@ -31,11 +31,12 @@
     .options button:hover { background: #a26fae; }
     .result { margin: 2em 0 0; padding: 1.5em; background: #262741e6; border-radius: 12px; text-align: center;}
     .result strong { font-size: 2em; display: block; color: #ffedad; margin-bottom: .5em; }
-    .mood-emojis { font-size: 2.8em; margin-bottom: .4em;}
+    .mood-img { max-width: 340px; width: 70%; border-radius: 22px; margin: 1em auto 1.2em; box-shadow: 0 8px 32px #0004; display: block;}
     .footer { text-align: center; margin: 2em auto 0; color: #ba8ed6; font-size: .96em; }
     @media (max-width: 600px) {
       .container { padding: 1em; }
       .question, .options button { font-size: 1em; }
+      .mood-img { width: 95%; }
     }
   </style>
 </head>
@@ -49,6 +50,14 @@
     &copy; 2025 Vibe-Coded Mood Quiz &mdash; Made with <span style="color: #f2aacb;">&#10084;&#65039;</span>
   </div>
   <script>
+    // Local PNG files for result images
+    const moodImages = {
+      'Golden Ember': "image3.png",
+      'Electric Storm': "image1.png",
+      'Glass Horizon': "image2.png",
+      'Midnight Current': "image4.png"
+    };
+
     const questions = [
       {
         prompt: "1) Pick a sky:",
@@ -88,22 +97,17 @@
       },
     ];
 
-    // Mood titles, emoji splashes, and descriptions
     const moods = {
       'Golden Ember': {
-        emojis: "🌅✨🧡🎨🍯",
         description: "You’re glowing but grounded — peaceful, creative, a little dreamy.<br>A soft-focus moment of rest before something new."
       },
       'Electric Storm': {
-        emojis: "⚡🌪️🌀🔥🥁",
         description: "You’re buzzing, bold, and a bit chaotic. Passion, irritation, and excitement<br>are tangled together — you’re alive with purpose."
       },
       'Glass Horizon': {
-        emojis: "🔮🌌🫧🕶️⏳",
         description: "You’re in a liminal mood — detached, observant, reflective.<br>The world feels like a movie, and you’re both inside it and watching from afar."
       },
       'Midnight Current': {
-        emojis: "🌙🦇💤🧊🎧",
         description: "You’re magnetic, intuitive, and a little mysterious.<br>You pull energy toward you without saying a word — transformation’s brewing."
       }
     };
@@ -163,13 +167,13 @@
         html += `<strong>You’re a blend of moods:</strong><br>`;
         winners.forEach(mood => {
           html += `<div style="margin-top: 1.5em;">
-            <div class="mood-emojis">${moods[mood].emojis}</div>
+            <img src="${moodImages[mood]}" alt="${mood}" class="mood-img">
             <b>${mood}</b><br><span>${moods[mood].description}</span>
           </div>`;
         });
       } else {
         winners.forEach(mood => {
-          html += `<div class="mood-emojis">${moods[mood].emojis}</div>
+          html += `<img src="${moodImages[mood]}" alt="${mood}" class="mood-img">
           <strong>${mood}</strong><br>${moods[mood].description}`;
         });
       }
