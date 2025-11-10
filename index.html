@@ -1,174 +1,214 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>🌙 Vibe-Coded Mood Quiz</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    body { font-family: 'Segoe UI', sans-serif; background: #1e222b; color: #fde9f5; padding: 0; margin: 0; min-height: 100vh;}
-    .container { max-width: 550px; margin: 2.5rem auto; background: #293044cc; border-radius: 18px; box-shadow: 0 8px 32px #04071370; padding: 2.5rem; }
-    h1 { font-size: 2rem; text-align: center; margin-bottom: .5em; }
-    .instructions { font-size: 1.1rem; color: #f2aacb; text-align: center; margin-bottom: 2rem;}
-    .question { font-size: 1.3rem; margin: 1.5em 0 .5em; }
-    .options button {
-      display: block;
-      width: 100%;
-      margin: 0.5em 0;
-      font-size: 1.1rem;
-      background: #472a4b;
-      color: #fde9f5;
-      border: none;
-      padding: .7em 1.2em;
-      border-radius: 7px;
-      cursor: pointer;
-      transition: background .15s;
-    }
-    .options button.answered {
-      background: #f2aacb;
-      color: #2e1032;
-      pointer-events: none;
-    }
-    .options button:hover { background: #a26fae; }
-    .result { margin: 2em 0 0; padding: 1.5em; background: #262741e6; border-radius: 12px; text-align: center;}
-    .result strong { font-size: 1.6em; display: block; color: #ffedad; margin-bottom: .5em; }
-    .footer { text-align: center; margin: 2em auto 0; color: #ba8ed6; font-size: .96em; }
-    @media (max-width: 600px) {
-      .container { padding: 1em; }
-      .question, .options button { font-size: 1em; }
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>🌙 Vibe-Coded Mood Quiz</h1>
-    <div class="instructions">Answer instinctively — there are no wrong answers.</div>
-    <div id="quiz"></div>
-  </div>
-  <div class="footer">
-    &copy; 2025 Vibe-Coded Mood Quiz &mdash; Made with <span style="color: #f2aacb;">&#10084;&#65039;</span>
-  </div>
-  <script>
-    const questions = [
-      {
-        prompt: "1) Pick a sky:",
-        options: {
-          'A': "Pale pink dawn, soft and sleepy",
-          'B': "Thunderclouds rolling in, electric and loud",
-          'C': "Indigo twilight, one star showing",
-          'D': "Deep midnight blue, clouds drifting slowly",
-        },
-      },
-      {
-        prompt: "2) Which song feels most like you right now?",
-        options: {
-          'A': "Mellow indie acoustic, gentle and bright",
-          'B': "Pulsing synthpop, crackling with energy",
-          'C': "Dreamy ambient, floating outside time",
-          'D': "Lush trip-hop, mysterious and deep",
-        },
-      },
-      {
-        prompt: "3) Your favorite place to recharge:",
-        options: {
-          'A': "Curled up at home, surrounded by cozy lights",
-          'B': "In the thick of a crowd, adrenaline high",
-          'C': "Watching the world from a quiet cafe",
-          'D': "Wandering beneath streetlights at night",
-        },
-      },
-      {
-        prompt: "4) You crave:",
-        options: {
-          'A': "Inspiration and a moment to breathe",
-          'B': "A challenge — something to conquer",
-          'C': "A pause to reflect and take it in",
-          'D': "A secret adventure after dark",
-        },
-      },
-    ];
+import streamlit as st
+from collections import Counter
+import time
 
-    const moodDescriptions = {
-      'Golden Ember': "You’re glowing but grounded — peaceful, creative, a little dreamy.<br>A soft-focus moment of rest before something new.",
-      'Electric Storm': "You’re buzzing, bold, and a bit chaotic. Passion, irritation, and excitement<br>are tangled together — you’re alive with purpose.",
-      'Glass Horizon': "You’re in a liminal mood — detached, observant, reflective.<br>The world feels like a movie, and you’re both inside it and watching from afar.",
-      'Midnight Current': "You’re magnetic, intuitive, and a little mysterious.<br>You pull energy toward you without saying a word — transformation’s brewing."
-    };
+st.set_page_config(page_title="What's Your Current Vibe?", page_icon="🌙", layout="centered")
 
-    const answerMap = {
-      'A': 'Golden Ember',
-      'B': 'Electric Storm',
-      'C': 'Glass Horizon',
-      'D': 'Midnight Current'
-    };
-
-    let current = 0;
-    let answers = [];
-
-    function renderQuiz() {
-      const quizDiv = document.getElementById('quiz');
-      quizDiv.innerHTML = '';
-      if (current < questions.length) {
-        const { prompt, options } = questions[current];
-        let html = `<div class="question">${prompt}</div><div class="options">`;
-        for (const key of Object.keys(options)) {
-          html += `<button onclick="selectOption('${key}')">${key}) ${options[key]}</button>`;
+st.markdown("""
+    <style>
+    @keyframes fadeIn {
+        from { 
+            opacity: 0; 
+            transform: translateY(30px); 
         }
-        html += "</div>";
-        quizDiv.innerHTML = html;
-      } else {
-        showResult();
-      }
-    }
-
-    window.selectOption = function(key) {
-      answers.push(key);
-      // Mark selected option & disable others (UI feedback)
-      const btns = document.querySelectorAll('.options button');
-      btns.forEach(btn => {
-        if (btn.textContent.startsWith(key + ")")) {
-          btn.classList.add('answered');
-        } else {
-          btn.disabled = true;
+        to { 
+            opacity: 1; 
+            transform: translateY(0); 
         }
-      });
-      setTimeout(() => {
-        current++;
-        renderQuiz();
-      }, 400);
-    };
-
-    function showResult() {
-      // Tally mood results
-      const moodCount = { 'Golden Ember': 0, 'Electric Storm': 0, 'Glass Horizon': 0, 'Midnight Current': 0 };
-      answers.forEach(a => moodCount[answerMap[a]]++);
-      let max = Math.max(...Object.values(moodCount));
-      const winners = Object.keys(moodCount).filter(mood => moodCount[mood] === max);
-
-      let html = `<div class="result">`;
-      if (winners.length > 1) {
-        html += `<strong>You’re a blend of moods:</strong><br>`;
-        winners.forEach(mood => {
-          html += `<div style="margin-top: 1em;"><b>${mood}</b><br><span>${moodDescriptions[mood]}</span></div>`;
-        });
-      } else {
-        winners.forEach(mood => {
-          html += `<strong>${mood}</strong><br>${moodDescriptions[mood]}`;
-        });
-      }
-      html += `<br><br><button onclick="restartQuiz()" style="margin-top:1.2em;background:#30335e">Restart Quiz</button>`;
-      html += `</div>`;
-      document.getElementById('quiz').innerHTML = html;
     }
+    
+    @keyframes glow {
+        0%, 100% { 
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3); 
+        }
+        50% { 
+            box-shadow: 0 0 40px rgba(255, 215, 0, 0.6); 
+        }
+    }
+    
+    .result-container {
+        animation: fadeIn 1s ease-out;
+        padding: 30px;
+        border-radius: 20px;
+        margin: 20px 0;
+        background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+        backdrop-filter: blur(10px);
+    }
+    
+    .mood-image {
+        border-radius: 20px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        margin: 20px 0;
+        animation: fadeIn 1.2s ease-out;
+    }
+    
+    .stButton>button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 25px;
+        padding: 12px 30px;
+        font-weight: bold;
+        border: none;
+        transition: all 0.3s ease;
+    }
+    
+    .stButton>button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+    }
+    
+    h1, h2 {
+        animation: fadeIn 0.8s ease-out;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
-    window.restartQuiz = function() {
-      current = 0;
-      answers = [];
-      renderQuiz();
-    };
+def calculate_mood(answers):
+    letter_counts = Counter(answers.values())
+    max_count = max(letter_counts.values())
+    tied_letters = [letter for letter, count in letter_counts.items() if count == max_count]
+    
+    mood_results = {
+        'A': {
+            'title': '🌤️ Golden Ember',
+            'description': "You're glowing but grounded — peaceful, creative, a little dreamy. You're in a soft-focus moment of rest before something new.",
+            'image': 'attached_assets/generated_images/Golden_Ember_vibe_image_172fa472.png',
+            'celebration': 'balloons'
+        },
+        'B': {
+            'title': '⚡ Electric Storm',
+            'description': "You're buzzing, bold, and a bit chaotic. Passion, irritation, and excitement are tangled together — but you're alive with purpose.",
+            'image': 'attached_assets/generated_images/Electric_Storm_vibe_image_e51388d3.png',
+            'celebration': 'balloons'
+        },
+        'C': {
+            'title': '🔮 Glass Horizon',
+            'description': "You're in a liminal mood — detached, observant, reflective. The world feels like a movie, and you're both inside it and watching from afar.",
+            'image': 'attached_assets/generated_images/Glass_Horizon_vibe_image_6ac9cd64.png',
+            'celebration': 'snow'
+        },
+        'D': {
+            'title': '🌙 Midnight Current',
+            'description': "You're magnetic, intuitive, and maybe a little mysterious. You're pulling energy toward you without saying a word — transformation's brewing.",
+            'image': 'attached_assets/generated_images/Midnight_Current_vibe_image_1b3383c2.png',
+            'celebration': 'snow'
+        }
+    }
+    
+    if len(tied_letters) == 1:
+        result = mood_results[tied_letters[0]]
+        return result['title'], result['description'], result['image'], result['celebration'], tied_letters[0]
+    else:
+        tied_letters.sort()
+        mood_names = [mood_results[letter]['title'] for letter in tied_letters]
+        mood_titles = " + ".join(mood_names)
+        blended_description = f"You're in a blended state between {' and '.join(mood_names)}. Your energy is multifaceted right now — embracing multiple vibes at once."
+        first_letter_image = mood_results[tied_letters[0]]['image']
+        return mood_titles, blended_description, first_letter_image, 'balloons', None
 
-    // Initial render
-    renderQuiz();
+st.title("🌙 What's Your Current Vibe?")
+st.markdown("### A mood-coded quiz — answer instinctively, not logically.")
 
-  </script>
-</body>
-</html>
+st.markdown("---")
+
+if 'submitted' not in st.session_state:
+    st.session_state.submitted = False
+
+if not st.session_state.submitted:
+    with st.form("mood_quiz"):
+        q1 = st.radio(
+            "**1️⃣ Pick a sky:**",
+            ['A) Pale pink dawn, soft and sleepy', 
+             'B) Thunderclouds rolling in, electric and loud', 
+             'C) Indigo twilight, one star showing', 
+             'D) Midday blue, too bright to think'],
+            key='q1'
+        )
+        
+        q2 = st.radio(
+            "**2️⃣ A song starts playing — what instrument do you hear first?**",
+            ['A) A low bassline that hums through your chest', 
+             'B) A violin trembling with emotion', 
+             'C) Distant drums from another room', 
+             'D) Synth notes that sound like falling stars'],
+            key='q2'
+        )
+        
+        q3 = st.radio(
+            "**3️⃣ You walk into an empty room. What's the temperature of it?**",
+            ['A) Cool, almost silver', 
+             'B) Warm with sunlight and dust', 
+             'C) Slightly too cold — but awake', 
+             'D) The air feels charged, like something\'s about to happen'],
+            key='q3'
+        )
+        
+        q4 = st.radio(
+            "**4️⃣ Pick a texture:**",
+            ['A) Velvet', 
+             'B) Denim', 
+             'C) Glass', 
+             'D) Smoke'],
+            key='q4'
+        )
+        
+        q5 = st.radio(
+            "**5️⃣ You're handed a drink. What does it taste like?**",
+            ['A) Cinnamon and honey', 
+             'B) Black coffee with a spark of citrus', 
+             'C) Mint and melting ice', 
+             'D) Something floral you can\'t name'],
+            key='q5'
+        )
+        
+        q6 = st.radio(
+            "**6️⃣ Choose the phrase that feels right right now:**",
+            ['A) "Everything\'s in motion."', 
+             'B) "I could vanish or bloom."', 
+             'C) "Let\'s see what burns."', 
+             'D) "Quiet is a kind of power."'],
+            key='q6'
+        )
+        
+        submitted = st.form_submit_button("✨ Reveal My Vibe ✨", width='stretch')
+        
+        if submitted:
+            st.session_state.submitted = True
+            answers = {
+                'q1': q1[0],
+                'q2': q2[0],
+                'q3': q3[0],
+                'q4': q4[0],
+                'q5': q5[0],
+                'q6': q6[0]
+            }
+            st.session_state.answers = answers
+            st.rerun()
+
+if st.session_state.submitted:
+    mood_title, mood_description, mood_image, celebration, mood_letter = calculate_mood(st.session_state.answers)
+    
+    with st.spinner('Revealing your vibe...'):
+        time.sleep(1)
+    
+    if celebration == 'balloons':
+        st.balloons()
+    else:
+        st.snow()
+    
+    st.markdown(f"""
+        <div class="result-container">
+            <div style="background-color: #d4edda; border-left: 4px solid #28a745; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                <h3 style="margin: 0; color: #155724;">✨ Your Vibe Revealed ✨</h3>
+            </div>
+            <h2 style="margin: 20px 0;">{mood_title}</h2>
+            <p style="font-size: 1.1rem; line-height: 1.6;">{mood_description}</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    st.image(mood_image, width='stretch')
+    
+    st.markdown("---")
+    if st.button("✨ Take Quiz Again ✨", width='stretch'):
+        st.session_state.submitted = False
+        st.rerun()
