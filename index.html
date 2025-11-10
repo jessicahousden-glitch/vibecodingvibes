@@ -30,7 +30,8 @@
     }
     .options button:hover { background: #a26fae; }
     .result { margin: 2em 0 0; padding: 1.5em; background: #262741e6; border-radius: 12px; text-align: center;}
-    .result strong { font-size: 1.6em; display: block; color: #ffedad; margin-bottom: .5em; }
+    .result strong { font-size: 2em; display: block; color: #ffedad; margin-bottom: .5em; }
+    .mood-emojis { font-size: 2.8em; margin-bottom: .4em;}
     .footer { text-align: center; margin: 2em auto 0; color: #ba8ed6; font-size: .96em; }
     @media (max-width: 600px) {
       .container { padding: 1em; }
@@ -87,11 +88,24 @@
       },
     ];
 
-    const moodDescriptions = {
-      'Golden Ember': "You’re glowing but grounded — peaceful, creative, a little dreamy.<br>A soft-focus moment of rest before something new.",
-      'Electric Storm': "You’re buzzing, bold, and a bit chaotic. Passion, irritation, and excitement<br>are tangled together — you’re alive with purpose.",
-      'Glass Horizon': "You’re in a liminal mood — detached, observant, reflective.<br>The world feels like a movie, and you’re both inside it and watching from afar.",
-      'Midnight Current': "You’re magnetic, intuitive, and a little mysterious.<br>You pull energy toward you without saying a word — transformation’s brewing."
+    // Mood titles, emoji splashes, and descriptions
+    const moods = {
+      'Golden Ember': {
+        emojis: "🌅✨🧡🎨🍯",
+        description: "You’re glowing but grounded — peaceful, creative, a little dreamy.<br>A soft-focus moment of rest before something new."
+      },
+      'Electric Storm': {
+        emojis: "⚡🌪️🌀🔥🥁",
+        description: "You’re buzzing, bold, and a bit chaotic. Passion, irritation, and excitement<br>are tangled together — you’re alive with purpose."
+      },
+      'Glass Horizon': {
+        emojis: "🔮🌌🫧🕶️⏳",
+        description: "You’re in a liminal mood — detached, observant, reflective.<br>The world feels like a movie, and you’re both inside it and watching from afar."
+      },
+      'Midnight Current': {
+        emojis: "🌙🦇💤🧊🎧",
+        description: "You’re magnetic, intuitive, and a little mysterious.<br>You pull energy toward you without saying a word — transformation’s brewing."
+      }
     };
 
     const answerMap = {
@@ -148,11 +162,15 @@
       if (winners.length > 1) {
         html += `<strong>You’re a blend of moods:</strong><br>`;
         winners.forEach(mood => {
-          html += `<div style="margin-top: 1em;"><b>${mood}</b><br><span>${moodDescriptions[mood]}</span></div>`;
+          html += `<div style="margin-top: 1.5em;">
+            <div class="mood-emojis">${moods[mood].emojis}</div>
+            <b>${mood}</b><br><span>${moods[mood].description}</span>
+          </div>`;
         });
       } else {
         winners.forEach(mood => {
-          html += `<strong>${mood}</strong><br>${moodDescriptions[mood]}`;
+          html += `<div class="mood-emojis">${moods[mood].emojis}</div>
+          <strong>${mood}</strong><br>${moods[mood].description}`;
         });
       }
       html += `<br><br><button onclick="restartQuiz()" style="margin-top:1.2em;background:#30335e">Restart Quiz</button>`;
@@ -168,7 +186,6 @@
 
     // Initial render
     renderQuiz();
-
   </script>
 </body>
 </html>
